@@ -1,0 +1,211 @@
+<!-- frontend/index.html -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Minsk Finance</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="./src/style.css">
+</head>
+<body>
+<div class="ios-app">
+
+    <!-- Интерактивный Гайд (Onboarding Overlay) -->
+    <div id="onboarding-overlay" class="onboarding-overlay">
+        <div id="onboarding-card" class="onboarding-card">
+            <div id="onboarding-text" class="onboarding-text">Добро пожаловать!</div>
+            <button id="onboarding-btn" class="ios-btn-primary" style="margin-top:12px; padding:10px;">Далее</button>
+        </div>
+    </div>
+
+    <!-- Вкладка: Обзор -->
+    <main id="tab-balance" class="tab-page active">
+        <div class="ios-header" style="display:flex; justify-content:space-between; align-items:center;">
+            <h1 id="user-greeting">Обзор</h1>
+            <button id="btn-restart-guide" class="ios-link-btn" style="font-size:12px;">❓ Инструкция</button>
+        </div>
+
+        <!-- Блок Свободных Денег (Двойная валюта) -->
+        <div class="ios-section">
+            <div class="free-cash-card">
+                <div class="free-cash-label">Свободные деньги</div>
+                <div class="free-cash-main" id="free-cash-byn">0.00 BYN</div>
+                <div class="free-cash-sub" id="free-cash-usd">~ $0.00</div>
+            </div>
+        </div>
+
+        <div class="ios-section" id="guide-accounts">
+            <div class="ios-section-header">
+                <span>Мои счета</span>
+                <button class="ios-link-btn" id="btn-open-acc-modal">+ Счет</button>
+            </div>
+            <div class="ios-horizontal-scroll" id="accounts-list"></div>
+        </div>
+
+        <div class="ios-section" id="guide-savings">
+            <div class="ios-section-header">
+                <span>Накопления и Цели</span>
+                <button class="ios-link-btn" id="btn-open-goal-modal">+ Цель</button>
+            </div>
+            <div id="savings-list" class="ios-input-group" style="padding:10px;"></div>
+        </div>
+
+        <div class="ios-section" id="guide-transactions">
+            <div class="ios-section-header">Последние операции</div>
+            <ul class="ios-list" id="transactions-list"></ul>
+        </div>
+    </main>
+
+    <!-- Вкладка: Добавить -->
+    <main id="tab-add" class="tab-page">
+        <div class="ios-header">
+            <h1>Новая запись</h1>
+        </div>
+
+        <div class="ios-segmented-control">
+            <div class="segment active" data-type="expense">Расход</div>
+            <div class="segment" data-type="income">Доход</div>
+        </div>
+
+        <form id="transaction-form" class="ios-form">
+            <div class="ios-input-group">
+                <div class="ios-input-row">
+                    <label>Сумма</label>
+                    <input type="number" id="tx-amount" step="0.01" placeholder="0.00" inputmode="decimal" required>
+                </div>
+                <div class="ios-input-row">
+                    <label>Счет</label>
+                    <select id="tx-account" required></select>
+                </div>
+                <div class="ios-input-row">
+                    <label>Категория</label>
+                    <div class="select-with-btn">
+                        <select id="tx-category" required></select>
+                        <button type="button" class="ios-icon-btn" id="btn-open-cat-modal">＋</button>
+                    </div>
+                </div>
+                <div class="ios-input-row">
+                    <label>Заметка</label>
+                    <input type="text" id="tx-note" placeholder="Необязательно">
+                </div>
+            </div>
+            <button type="submit" class="ios-btn-primary">Сохранить</button>
+        </form>
+    </main>
+
+    <!-- Вкладка: Аналитика -->
+    <main id="tab-forecast" class="tab-page">
+        <div class="ios-header">
+            <h1>Аналитика</h1>
+        </div>
+
+        <div class="ios-section">
+            <div class="donut-chart-container">
+                <svg viewBox="0 0 42 42" class="donut-svg" id="donut-svg">
+                    <circle class="donut-hole" cx="21" cy="21" r="15.91549430918954" fill="var(--ios-card)"></circle>
+                    <circle class="donut-ring" cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="rgba(118, 118, 128, 0.12)" stroke-width="5"></circle>
+                </svg>
+                <div class="donut-text">
+                    <div style="font-size:12px; color:var(--ios-hint);">Траты за месяц</div>
+                    <div id="donut-total" style="font-size:18px; font-weight:700;">0 BYN</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ios-section">
+            <div class="ios-section-header">Структура расходов</div>
+            <div id="category-breakdown-list" class="ios-input-group"></div>
+        </div>
+
+        <div class="ios-section">
+            <div class="ios-section-header">Выводы финансового помощника</div>
+            <div id="student-comments-list"></div>
+        </div>
+    </main>
+
+    <!-- Модалки -->
+    <div id="modal-account" class="ios-modal">
+        <div class="ios-modal-content">
+            <h3>Новый счет</h3>
+            <p class="ios-modal-subtitle">Введите название и начальный баланс</p>
+            <input type="text" id="new-acc-name" placeholder="Название (напр. Карта)">
+            <select id="new-acc-currency">
+                <option value="BYN">BYN</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="USDT">USDT</option>
+                <option value="LTC">LTC</option>
+            </select>
+            <input type="number" id="new-acc-balance" placeholder="Начальный баланс" step="0.01" inputmode="decimal">
+            <div class="ios-modal-actions">
+                <button type="button" class="cancel modal-close">Отмена</button>
+                <button type="button" class="save" id="btn-save-acc">Создать</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-goal" class="ios-modal">
+        <div class="ios-modal-content">
+            <h3>Новая цель</h3>
+            <p class="ios-modal-subtitle">На что хотите отложить денег?</p>
+            <input type="text" id="new-goal-title" placeholder="Название (напр. На гаджет)">
+            <input type="number" id="new-goal-target" placeholder="Целевая сумма" step="0.01">
+            <select id="new-goal-currency">
+                <option value="BYN">BYN</option>
+                <option value="USD">USD</option>
+                <option value="USDT">USDT</option>
+            </select>
+            <div class="ios-modal-actions">
+                <button type="button" class="cancel modal-close">Отмена</button>
+                <button type="button" class="save" id="btn-save-goal">Создать</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-deposit" class="ios-modal">
+        <div class="ios-modal-content">
+            <h3>Отложить в копилку</h3>
+            <p class="ios-modal-subtitle" id="deposit-goal-title">Цель</p>
+            <select id="deposit-from-account"></select>
+            <input type="number" id="deposit-amount" placeholder="Сумма перевода" step="0.01">
+            <div class="ios-modal-actions">
+                <button type="button" class="cancel modal-close">Отмена</button>
+                <button type="button" class="save" id="btn-save-deposit">Отложить</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-category" class="ios-modal">
+        <div class="ios-modal-content">
+            <h3>Новая категория</h3>
+            <p class="ios-modal-subtitle">Выберите иконку и название</p>
+            <div class="emoji-picker" id="emoji-grid"></div>
+            <input type="text" id="new-cat-name" placeholder="Название">
+            <div class="ios-modal-actions">
+                <button type="button" class="cancel modal-close">Отмена</button>
+                <button type="button" class="save" id="btn-save-cat">Создать</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Таббар -->
+    <nav class="ios-tabbar">
+        <div class="tab-item active" data-target="tab-balance" id="guide-tab-overview">
+            <svg class="ios-svg-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 10h2v7H7zm4-3h2v10h-2zm4 6h2v4h-2z"/></svg>
+            <span class="label">Обзор</span>
+        </div>
+        <div class="tab-item" data-target="tab-add" id="guide-tab-add">
+            <svg class="ios-svg-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+            <span class="label">Добавить</span>
+        </div>
+        <div class="tab-item" data-target="tab-forecast">
+            <svg class="ios-svg-icon" viewBox="0 0 24 24"><path fill="currentColor" d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+            <span class="label">Аналитика</span>
+        </div>
+    </nav>
+</div>
+
+<script type="module" src="./src/app.js"></script>
+</body>
+</html>
