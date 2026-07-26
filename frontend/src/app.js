@@ -2,6 +2,7 @@
 const API_URL = '/api';
 const tg = window.Telegram?.WebApp;
 
+
 if (tg) {
     try { tg.ready(); tg.expand(); } catch(e) {}
 }
@@ -431,5 +432,11 @@ function renderComments(comments) {
     <div class="comment-card">${text}</div>
   `).join('');
 }
+
+const BACKEND_PROD_URL = 'https://minsk-finance-api-xyz1.onrender.com/api';
+
+const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? '/api'
+  : BACKEND_PROD_URL;
 
 document.addEventListener('DOMContentLoaded', initApp);
