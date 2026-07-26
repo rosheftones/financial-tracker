@@ -433,7 +433,7 @@ function renderComments(comments) {
   `).join('');
 }
 
-const BACKEND_PROD_URL = 'https://minsk-finance-api-xyz1.onrender.com/api';
+const BACKEND_PROD_URL = 'https://financial-tracker-backend-sjtp.onrender.com/api/init'
 
 const API_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
   ? '/api'
